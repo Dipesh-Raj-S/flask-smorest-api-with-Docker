@@ -1,0 +1,554 @@
+REST API Functions :
+It receives a request from the client, then responds with some data. 
+Multiple applications can make requests to the same API and share resource like DB
+
+Create stores, each with a name and a list of stocked items.
+Create an item within a store, each with a name and a price.
+Retrieve a list of all stores and their items.
+Given its name, retrieve an individual store and all its items.
+Given a store name, retrieve only a list of item within it.
+-----------------------
+Create stores
+-----------------------
+Request:
+POST /store {"name": "My Store"}
+
+Response:
+{"name": "My Store", "items": []}
+
+------------------------
+Create items
+------------------------
+Request:
+POST /store/My Store/item {"name": "Chair", "price": 175.50}
+
+Response:
+{"name": "Chair", "price": 175.50}
+---------------------------------------------
+------------------------------------
+Retrieve all stores and their items
+------------------------------------
+Request:
+GET /store
+
+Response:
+{
+    "stores": [
+        {
+            "name": "My Store",
+            "items": [
+                {
+                    "name": "Chair",
+                    "price": 175.50
+                }
+            ]
+        }
+    ]
+}
+
+------------------------------------
+Get a particular store
+------------------------------------
+Request:
+GET /store/My Store
+
+/store/My Store--> end point
+GET --> method
+Response:
+{
+    "name": "My Store",
+    "items": [
+        {
+            "name": "Chair",
+            "price": 175.50
+        }
+    ]
+}
+---------------------------
+Get only items in a store
+---------------------------
+Request:
+GET /store/My Store/item
+
+Response:
+[
+    {
+        "name": "Chair",
+        "price": 175.50
+    }
+]
+
+
+-------------------------------------
+building proj
+-------------------------------------
+
+create virtual envvironment --> it has spl packages for that project--isolated Python + isolated packages for one project.
+select interpreter by ctrl+shit+p
+now open a new terminal
+u should see (.venv)
+then pip install flask
+
+inside app.py  :
+    from flask import Flask
+    app=Flask(__name__)  #this creates a flask app, used to run the app and maintain end points
+
+then "flask run" in terminal--> looks for file app.py and inside that it looks for variable called app, var and file name should be same
+
+we get WARNING:
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+
+When we deploy this application to the users--> we do by flask run
+
+Running on http://127.0.0.1:5000
+
+When we make any request to this app, we are making a request or send data to this IP. 
+
+--------------------------------
+REST API ENDPOINT
+Usually, we store the data in a database. Just initially, we will Store in a list. 
+
+JSON-->
+### JSON (JavaScript Object Notation) — Quick Notes
+
+**What is JSON?**
+
+* A text format used to exchange data between client and server.
+* REST APIs usually send and receive JSON.
+
+**JSON supports:**
+
+* Strings → `"Dipesh"`
+* Numbers → `25`, `15.99`
+* Booleans → `true`, `false`
+* Arrays (lists) → `[1, 2, 3]`
+* Objects (key-value pairs) → `{"name": "Dipesh"}`
+
+Example:
+
+```json
+{
+    "name": "Dipesh",
+    "age": 20,
+    "isStudent": true,
+    "skills": ["Python", "Flask"]
+}
+```
+
+### Python vs JSON
+
+Python:
+
+```python
+{
+    "name": "Dipesh",
+    "age": 20,
+    "isStudent": True
+}
+```
+
+JSON:
+
+```json
+{
+    "name": "Dipesh",
+    "age": 20,
+    "isStudent": true
+}
+```
+
+Notice:
+
+```text
+Python     JSON
+True   ->  true
+False  ->  false
+None   ->  null
+```
+
+### Flask and JSON
+
+When you return a dictionary:
+
+```python
+@app.get("/store")
+def get_stores():
+    return {"stores": stores}
+```
+
+Flask automatically:
+
+1. Converts Python dict → JSON
+2. Sends it as HTTP response
+
+### Important
+
+* JSON keys must use double quotes:
+
+```json
+{"name": "Chair"}
+```
+
+not
+
+```json
+{'name': 'Chair'}
+```
+
+* Top-level JSON can be:
+
+  * Object `{ }`
+  * Array `[ ]`
+
+### One-Line Definition
+
+> JSON is a standardized text format used by APIs to send and receive structured data. 🚀
+
+------------------------------------------
+
+FOR TESTING  APIs
+inintially we use exploratory TESTING(insomnia client) then go for automated testing
+
+insomnia client makes request to our API and get responses and we check whether the response match with what we expect
+
+status codes:
+
+200-OK --> evrything goes well
+201-ok , created --> smtg gets created
+301- moved to new URL(Redirect)
+304-Not modified--> the page visited hasnt changed(catched version)
+400-bad request
+401-unauthorized -- missing any token
+404- if we are looking for a page which does not exist(NOT FOUND)
+500-internal server Error
+
+
+
+INSIDE DOCKER
+
+Dockerfile
+
+FROM python:3.14.5
+- Base image for the container.
+- Downloads an image with Python 3.14.5 already installed.
+- Every Docker image starts with a FROM instruction.
+
+EXPOSE 5000
+- Documents that the application uses port 5000.
+- Helps other developers know which port the app runs on.
+- Does NOT actually publish the port; docker run -p does that.
+
+WORKDIR /app
+- Sets the working directory inside the container to /app.
+- Similar to running:
+    mkdir /app
+    cd /app
+- Future commands run from this directory.
+
+RUN pip install flask
+- Executes a command while building the image.
+- Installs Flask into the image.
+- Runs only once during image creation.
+
+COPY . .
+- Copies all files from the current project directory
+  (on your computer) into the current working directory
+  (/app) inside the container.
+
+CMD ["flask","run","--host","0.0.0.0"]
+- Command executed when the container starts.
+- Starts the Flask application.
+- --host 0.0.0.0 allows connections from outside
+  the container.
+- Without it, Flask would only listen on localhost
+  inside the container and would not be reachable.
+
+Flow:
+
+Dockerfile
+    ↓
+docker build
+    ↓
+Docker Image
+    ↓
+docker run
+    ↓
+Container Starts
+    ↓
+CMD runs:
+flask run --host 0.0.0.0
+    ↓
+Flask API available on port 5000
+
+
+all this is for creating image
+
+
+-------------------------------------------------------------------------------
+IMPROVEMENT   -> FLASK SMOREST
+-------------------------------------------------------------------------------
+
+use UUIDs--> universally unique IDentifiers
+
+if two stores have same name, it creates coonfusion, url breaks when we modify any name of the store
+   the ids can be very long string or just with numbers increasing like  id --> 1,2,3,..
+
+requirements.txt has all the libraries used in the project
+.flaskenv has the env variable used in app.py
+FLASK_APP=app
+FLASK_DEBUG=1 --> we dont need to store and run the program again when we make changes to the code, app automatically restarts
+
+after implementing .flaskenv and requirements.txt
+u have to run pip install -r requirements.txt
+
+
+before improvement of data model
+
+
+from flask import Flask,request
+app=Flask(__name__)  
+
+stores=[
+    {
+        "name":"My Store",
+        "items":[
+            {
+                "name":"chair",
+                "price":"15.99"
+            }
+        ]
+    }
+]
+
+
+#Endpoint --> when our client requests data, we can return it
+#flask route
+
+@app.get("/store") # http://127.0.0.1:5000/store #"Hey Flask, if somebody sends a GET request to /store, run the function below."
+def get_stores():
+    return {"stores":stores} #returning json data--> REST api always returns json data,
+                            # here we receive status code of 200, ok
+
+#how to create stores in our rest API --> we receive JSON from our client
+#http://127.0.0.1:5000/store
+#{
+#	"name":"ice-cream-parlour"
+#}
+
+@app.post("/store")
+def create_store():
+    request_data=request.get_json() #request_data is a DICTIONARY with the json which is received(the json string is converted to a python dictionary)
+    new_store={"name":request_data["name"],"items":[]}
+    stores.append(new_store)
+    return new_store,201  ## here we receive status code of 201, ok, i have accepted the data and i will create
+
+#WHY do we use database instead of a python list ?
+#cuz python list doesnt persist between app runs, they just get deleted cuz they live in memory only, cuz of tht we use database
+
+#client send data and we add it--> either by json payload or through the URL
+
+#handling if the data comes through URL
+#http://127.0.0.1:5000/store?name=My Store --> query string
+#now ,here http://127.0.0.1:5000/store/My Store/item  -> json body
+#{
+#	"name":"ice-cream",
+#	"price":22.99
+#}
+
+@app.post("/store/<string:name>/item")
+def create_item(name):
+    request_data=request.get_json()
+    for store in stores:
+        if store["name"]==name:
+            new_item={"name":request_data["name"],"price":request_data["price"]}
+            store["items"].append(new_item)
+            return new_item, 201
+    return {"message": "Store not found"}, 404
+
+#when client wants to get the store info
+#http://127.0.0.1:5000/store/My Store    no need to send any json data
+@app.get("/store/<string:name>")
+def get_store(name):
+    for store in stores:
+        if store["name"]==name:
+            return store
+    return {"message":"store not found"}, 404
+
+
+#when client wants to get a  items of a specific store
+#http://127.0.0.1:5000/store/My Store/item    no need to send any json data
+
+@app.get("/store/<string:name>/item")
+def get_item_in_store(name):
+    for store in stores:
+        if store["name"]==name:
+            return {"items": store["items"]} #prefer returning as object(dictionary) used in frontend to add tags...
+    return {"message":"store not found"}, 404
+
+
+IN THE IMPROVEMENT, WE AVOIDED USING LIST AND SWITCHED TO DICTIONARY
+
+
+docker build -t flask-smorest-api .
+
+FROM python:3.14.5
+EXPOSE 5000
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+CMD ["flask","run","--host","0.0.0.0"]
+
+why we dont put copy . . before the pip install?
+
+reason is DOCKER LAYER CACHING
+
+Imagine your project is:
+
+app.py
+requirements.txt
+Dockerfile
+
+### First way (BAD)
+
+```dockerfile
+COPY . .
+RUN pip install -r requirements.txt
+```
+
+Docker does:
+
+```text
+1. Copy all files
+2. Install Flask
+```
+
+Now tomorrow you change:
+
+```python
+print("hello")
+```
+
+in `app.py`.
+
+When you build again, Docker sees:
+
+```text
+Files changed!
+```
+
+So it does:
+
+```text
+1. Copy all files again
+2. Install Flask again 😭
+```
+
+Even though Flask didn't change.
+
+---
+
+### Second way (GOOD)
+
+```dockerfile
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+```
+
+First build:
+
+```text
+1. Copy requirements.txt
+2. Install Flask
+3. Copy app.py
+```
+
+---
+
+Tomorrow you change only:
+
+```python
+app.py
+```
+
+Docker sees:
+
+```text
+requirements.txt did NOT change
+```
+
+So it says:
+
+```text
+I already installed Flask before.
+No need to install again 😎
+```
+
+It only does:
+
+```text
+Copy app.py
+```
+
+and finishes quickly.
+
+---
+
+### Real-life analogy
+
+Suppose every morning:
+
+```text
+1. Wear clothes
+2. Wear shoes
+3. Go to college
+```
+
+Tomorrow only your shirt changes.
+
+Would you:
+
+```text
+Buy new shoes again?
+```
+
+No 😭
+
+You reuse the shoes.
+
+Docker is doing the same thing:
+
+```text
+requirements.txt = shoes
+app.py = shirt
+```
+
+If only the shirt changes, don't buy shoes again.
+
+That's why:
+
+```dockerfile
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+```
+
+is faster. 🔥
+
+**One-line memory trick:**
+
+```text
+Copy requirements.txt first so Docker installs packages only once.
+Changing app.py later won't force package reinstallation.
+```
+
+
+---------------------------------------------------
+we used:
+FLASK_DEBUG=1 to make the flask app restart automatically after any change,sameway to do in docker,
+we use VOLUME
+docker run -dp 5005:500 -w /app -v "$(pwd):/app" flask-smorest-api  --> in macos
+
+Diff btw flask and flask-smorest?
+flask-smorestautomatically gives out  the error 
