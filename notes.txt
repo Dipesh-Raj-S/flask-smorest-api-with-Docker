@@ -738,3 +738,4 @@ def delete_store(store_id):
 
 
 
+MARSHMALLOW SCHEMAS  --> validation of APIs
