@@ -3,11 +3,11 @@ from marshmallow import Schema, fields
 #in this we define how the input,output behaves
 #ItemSchema = Rules for an Item
 
-class ItemSchema(Schema):
+class PlainItemSchema(Schema):
     id = fields.Str(dump_only=True)
     name = fields.Str(required=True)
     price = fields.Float(required=True)
-    store_id = fields.Str(required=True)
+   
 
 """
 this is checking the payload coming in (json format) 
@@ -27,6 +27,59 @@ class ItemUpdateSchema(Schema):
     price = fields.Float()
 
 
-class StoreSchema(Schema):
+class PlainStoreSchema(Schema):
     id = fields.Str(dump_only=True)
     name = fields.Str(required=True)
+
+class ItemSchema(PlainItemSchema):
+    store_id=fields.Int(required=True,load_only=True) #Client sends it.Server doesn't return it.
+    store=fields.Nested(PlainStoreSchema(),dump_only=True) #Inside Item,embed a Store.
+    """
+    Response becomes
+    {
+    "id":1,
+    "name":"Milk",
+    "price":20,
+
+    "store":{
+        "id":5,
+        "name":"Reliance"
+    }
+}"""
+
+class StoreSchema(PlainStoreSchema):
+    items=fields.List(fields.Nested(PlainItemSchema()),dump_only=True)
+
+
+
+
+
+# PlainItemSchema and PlainStoreSchema contain only basic fields.
+
+# ItemSchema extends PlainItemSchema and adds:
+# - store_id (used when creating items)
+# - nested store information
+
+# StoreSchema extends PlainStoreSchema and adds:
+# - list of items belonging to the store
+
+# load_only=True
+# -> Client can send field.
+# -> API won't return field.
+
+# dump_only=True
+# -> API can return field.
+# -> Client cannot send field.
+
+# fields.Nested(...)
+# -> Embed one object inside another.
+
+# fields.List(fields.Nested(...))
+# -> Embed a list of objects.
+
+# Example:
+# item.store
+# becomes nested JSON store data
+
+# store.items
+# becomes a list of nested item data
