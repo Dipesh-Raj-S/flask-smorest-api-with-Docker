@@ -5,6 +5,9 @@ from flask_smorest import Blueprint, abort
 
 from schemas import StoreSchema
 
+from db import db
+from sqlalchemy.exc import IntegrityError,SQLAlchemyError
+from models import StoreModel
 
 #BLUEPRINT IN FLASK-SMOREST
 #used to divide api into multiple segments
@@ -38,10 +41,13 @@ class StoreList(MethodView):
     @blp.response(200,StoreSchema())
     def post(self,store_data):
         
-        for store in stores.values():
-            if store_data["name"]==store["name"]:
-                abort(400,message="store already exists")    
-        store_id=uuid.uuid4().hex
-        store={**store_data, "id":store_id}
-        stores[store_id]=store
-        return store,201  ## here we receive status code of 201, ok, i have accepted the data and i will create
+        store=StoreModel(**store_data)
+        try:
+            db.session.add(store)
+            db.session.commit()
+        except IntegrityError: # when it violates some condition that we have sent
+            abort(400,message="A Store with that name already exixts")
+
+        except SQLAlchemyError:
+            abort(500,message="An error occured creating the store.")
+            return store
