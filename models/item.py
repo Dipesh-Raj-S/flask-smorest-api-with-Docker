@@ -19,3 +19,5 @@ class ItemModel(db.Model):
                                                                 #because it wont be having appropriate store to link with it
     store=db.relationship("StoreModel",back_populates="items") #The SQLAlchemy knows that the stores table is used by the Storemodel class. 
                                                                 #in notes.txt
+
+    items=db.relationship("ItemModel",back_populates="tags",secondary="items_tags")

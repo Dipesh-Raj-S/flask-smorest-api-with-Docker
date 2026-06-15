@@ -995,3 +995,13 @@ GET     	/tag/{id}	          Get information about a tag given its unique id.
 DELETE   	/tag/{id}	          Delete a tag, which must have no associated items.
 
 1.One-to-many relationship between stores and tags 
+
+2.many-to-many relnship btw  tags and items
+For a many-to-many relationship, one model can't have a single value as a foreign key. Otherwise, it would be a one-to-many. 
+Instead, what we do is construct a SECONDAR TABLE that has in each row a tag ID and corresponding item ID. 
+
+id  tag_id  item_id
+1   2       5
+2   1       4
+3   4       5
+4   1       3

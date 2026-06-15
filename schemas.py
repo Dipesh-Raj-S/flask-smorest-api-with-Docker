@@ -40,6 +40,7 @@ class ItemUpdateSchema(Schema):
 class ItemSchema(PlainItemSchema):
     store_id=fields.Int(required=True,load_only=True) #Client sends it.Server doesn't return it.
     store=fields.Nested(PlainStoreSchema(),dump_only=True) #Inside Item,embed a Store.
+    tags=fields.List(fields.Nested(PlainTagSchema()),dump_only=True) 
     """
     Response becomes
     {
@@ -60,7 +61,12 @@ class StoreSchema(PlainStoreSchema):
 class TagSchema(PlainTagSchema):
     store_id=fields.Int(load_only=True) #Client sends it.Server doesn't return it.
     store=fields.Nested(PlainStoreSchema(),dump_only=True) #Inside Item,embed a Store.
+    items=fields.List(fields.Nested(PlainItemSchema()),dump_only=True)
 
+class TagandItemSchema(Schema):
+    message=fields.Str()
+    item=fields.Nested(ItemSchema)
+    tag=fields.Nested(TagSchema)
 
 
 # PlainItemSchema and PlainStoreSchema contain only basic fields.
