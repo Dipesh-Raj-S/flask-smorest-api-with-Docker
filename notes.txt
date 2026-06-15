@@ -787,3 +787,49 @@ items = {
         "id": "lmn777"
     }
 }"""
+
+
+
+-------------------------------------
+SQLite      = Actual Database
+SQLAlchemy  = Translator / Helper
+
+Deleting Related Models with Cascades 
+
+As long as we are using SQLite, key constraints are not implemented. 
+means:
+        We can create an item with a store ID even if in the store table there is no store with that ID.
+        so when we  post to create itwm
+        {
+            "price":92,
+            "name":"chair,
+            "store_id":1
+        }
+        when we get return object:
+        {
+            "id":1,  --> this is item id
+            "price":92,
+            "name":"chair,
+            "store":null
+        }
+
+        but if we use PostgresSqlor any other we will get error saying,
+        There is no store existing with this store ID. My SQLite, it doesn't care. 
+
+        With any other database, you first create the store, then you create items inside it, and then you link it to the store ID.
+        
+        Now, with items under store with proper ID implemented, when you try to delete a store, it throws an integrity error. 
+        SQLAlchemy is trying to fix things, actually. 
+        So it is trying to delete the store and whatever the items which had this store ID, it is setting those items' store ID to null. 
+        But since it's a foreign key,We have set it to null level equal to false, meaning you can't set it to null. So because of this contradiction, an error occurs. 
+        
+        sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) NOT NULL constraint failed: items.store_id
+        [SQL: UPDATE items SET store_id=? WHERE items.id = ?]
+
+        HOW TO FIX?
+
+        Common solution: when the store gets deleted, along with it the items inside the store should also be deleted. 
+        Because we assume that items are under the store 
+        We are deleting the children when we are deleting their parent. 
+
+        So to do this, we use cascade. 
