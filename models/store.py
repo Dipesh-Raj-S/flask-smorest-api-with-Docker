@@ -10,4 +10,4 @@ class StoreModel(db.Model):
                                                                             #when we use it ,SQLAlchemy does NOT fetch items yet.Instead it returns a query object.
                                                                             #"Here is a query.Tell me what you want to do with it."
                                                                             #now u can get all items, or get only expensive ones..
-                                                                        
+    tags=db.relationship("TagModel",back_populates="store",lazy="dynamic")

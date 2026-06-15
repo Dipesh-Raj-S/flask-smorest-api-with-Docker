@@ -7,7 +7,7 @@ import models #this automatically imports StoreModel,ItemModel
 
 from resources.item import blp as ItemBlueprint  #Load all routes from item.py
 from resources.store import blp as StoreBlueprint  #Load all routes from store.py
-
+from resources.tag import blp as TagBlueprint     #Load all routes from tag.py
 
 def create_app(db_url=None):
     app = Flask(__name__)
@@ -38,6 +38,7 @@ def create_app(db_url=None):
 
     api.register_blueprint(ItemBlueprint)
     api.register_blueprint(StoreBlueprint)  
+    api.register_blueprint(TagBlueprint)  
 
     return app
 

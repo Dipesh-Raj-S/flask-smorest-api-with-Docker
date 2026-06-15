@@ -833,3 +833,165 @@ means:
         We are deleting the children when we are deleting their parent. 
 
         So to do this, we use cascade. 
+
+        THE CODE DOESNT CHANGE EVEN IF WE WANT TO SWITCH TO PostgresSql
+
+
+SOME MORE CHANGES:
+
+MANY-to-MANY RELATIONSHIP IN SQLAlchemy
+
+Ex: tags to group items, to search more easily
+
+chair tagged with furniture abd offfice
+laptop tagged with tech and offfice
+
+One item can be accessed with many tags,
+ and a tag can be associated with many items. 
+
+So here, the tags we create will be unique to each store. 
+This means that tag will have:
+A many-to-one relationship with stores
+Many-to-many relationship with items 
+
+
+SQLALCHEMY RELATIONSHIPS NOTES
+
+====================================================
+1. STORE ↔ ITEM (ONE-TO-MANY)
+====================================================
+One Store can have many Items.
+Each Item belongs to exactly one Store.
+
+Example:
+
+Reliance Store
+    ├── Milk
+    ├── Bread
+    └── Chips
+
+Database:
+
+Stores Table
+------------
+id   name
+1    Reliance
+
+Items Table
+-----------
+id   name    store_id
+1    Milk       1
+2    Bread      1
+3    Chips      1
+
+store_id is a FOREIGN KEY that links an Item to a Store.
+
+Relationship:
+
+Store -----> Many Items
+Item  -----> One Store
+
+
+SQLAlchemy:
+
+# ItemModel
+store_id = db.Column(
+    db.Integer,
+    db.ForeignKey("stores.id")
+)
+
+store = db.relationship(
+    "StoreModel",
+    back_populates="items"
+)
+
+# StoreModel
+items = db.relationship(
+    "ItemModel",
+    back_populates="store"
+)
+
+Useful Access:
+
+item.store
+# Item -> Store
+
+store.items
+# Store -> List of Items
+
+
+====================================================
+2. STORE ↔ TAG (ONE-TO-MANY)
+====================================================
+
+One Store can have many Tags.
+Each Tag belongs to one Store.
+
+Example:
+
+Reliance
+    ├── Food
+    ├── Furniture
+    └── Electronics
+
+Database:
+
+Stores
+------
+id   name
+1    Reliance
+
+Tags
+----
+id   name         store_id
+1    Food            1
+2    Furniture       1
+3    Electronics     1
+
+Relationship:
+
+Store -----> Many Tags
+Tag   -----> One Store
+
+
+====================================================
+3. TAG ↔ ITEM (MANY-TO-MANY)
+====================================================
+
+One Tag can have many Items.
+One Item can have many Tags.
+
+Example:
+
+Food Tag
+    ├── Milk
+    ├── Bread
+    └── Chocolate
+
+Snack Tag
+    └── Chocolate
+
+Chocolate belongs to:
+    Food
+    Snack
+
+Relationship:
+
+Tag  -----> Many Items
+Item -----> Many Tags
+
+This is called a MANY-TO-MANY relationship.
+
+new API endpoints
+
+we will add all the Tag endpoints:
+
+Method	Endpoint	Description
+GET	/store/{id}/tag	Get a list of tags in a store.
+POST      	/store/{id}/tag	      Create a new tag.
+POST	    /item/{id}/tag/{id}	  Link an item in a store with a tag from the same store.
+DELETE  	/item/{id}/tag/{id}	  Unlink a tag from an item.
+GET     	/tag/{id}	          Get information about a tag given its unique id.
+DELETE   	/tag/{id}	          Delete a tag, which must have no associated items.
+
+1.One-to-many relationship between stores and tags 
