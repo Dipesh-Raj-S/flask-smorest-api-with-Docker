@@ -27,11 +27,21 @@ class Item(MethodView):
 
     @blp.arguments(ItemUpdateSchema)
     @blp.response(200,ItemSchema)
-    def put(self, item_data,item_id):
-        item=ItemModel.query.get_or_404(item_id)
-        raise NotImplementedError("Deleting an item is not implemented")
+    def put(self, item_data,item_id): # we handle an Idempotent request->Running one or ten requests should result in the same state of it by the end. 
+        #AIM -> if the item exists, u update or else u create the item with all the properties included
 
+        item=ItemModel.query.get(item_id)
+        if item:
+            item.price=item_data["price"]
+            item.name=item_data["name"]
+                
+        else:
+            item=ItemModel(id=item_id,**item_data)
 
+        db.session.add(item)
+        db.session.commit()
+
+        return item
 
 @blp.route("/item")
 class ItemList(MethodView):
