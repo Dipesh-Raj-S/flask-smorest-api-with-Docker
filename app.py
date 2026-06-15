@@ -10,7 +10,7 @@ from resources.store import blp as StoreBlueprint  #Load all routes from store.p
 from resources.tag import blp as TagBlueprint     #Load all routes from tag.py
 
 def create_app(db_url=None):
-    app = Flask(__name__)
+    app = Flask(__name__)   #creates the server
 
     app.config["PROPAGATE_EXCEPTIONS"] = True #It's a Flask configuration which says if there are any exceptions which occur, just propogate it to the main app.py. 
     app.config["API_TITLE"] = "Stores REST API"
@@ -26,20 +26,37 @@ def create_app(db_url=None):
                                             #If no database is provided:sqlite:///data.db--> meaning create new file data.db and use it as database
                                             
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"]=False
-    db.init_app(app)  #Connect Flask with SQLAlchemy.
+    db.init_app(app)  #Connect Flask with SQLAlchemy.  SQLite = Database Engine;;SQLAlchemy = ORM (Object Relational Mapper)
 
     api = Api(app)  
 
     @app.before_request
     def create_tables():
         db.create_all()
+    
+    """
+    Before EVERY HTTP request, run create_tables()--> 
+    db.create_all() do?
+SQLAlchemy looks at all your models:
 
+class StoreModel(db.Model),class ItemModel(db.Model),class TagModel(db.Model),class ItemTags(db.Model)
+and asks:
+Do the corresponding tables exist?
+If not:
+CREATE TABLE stores ...,CREATE TABLE items ...,CREATE TABLE tags ...,CREATE TABLE items_tags ..."""
 
+    api.register_blueprint(ItemBlueprint) #load all routes from item.py
+    api.register_blueprint(StoreBlueprint)  #load all routes from store.py
+    api.register_blueprint(TagBlueprint)  #load all routes from tag.py
 
-    api.register_blueprint(ItemBlueprint)
-    api.register_blueprint(StoreBlueprint)  
-    api.register_blueprint(TagBlueprint)  
+    """After registration:  these were seperate before
+app.py
+   │
+   ├── item routes
+   ├── store routes
+   └── tag routes"""
 
+    
     return app
 
 #http://localhost:5000/swagger-ui

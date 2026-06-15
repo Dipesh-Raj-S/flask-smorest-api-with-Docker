@@ -19,7 +19,7 @@ class Store(MethodView):
     @blp.response(200,StoreSchema)
     def get(self,store_id):
         store=StoreModel.query.get_or_404(store_id)
-        return store  #object is being returned here
+        return store  #Python object is being returned here
     def delete(self,store_id):
         store=StoreModel.query.get_or_404(store_id)
         db.session.delete(store)
@@ -37,7 +37,7 @@ class StoreList(MethodView):
     @blp.response(200,StoreSchema())
     def post(self,store_data):
         
-        store=StoreModel(**store_data)
+        store=StoreModel(**store_data) #now we dont write request.get_json()==> because @blp.arguments(StoreSchema) already received and checked, schema converts to json as well
         try:
             db.session.add(store)
             db.session.commit()
