@@ -99,3 +99,7 @@ class TagandItemSchema(Schema):
 # store.items
 # becomes a list of nested item data
 
+class UserSchema(Schema):
+    id=fields.Int(dump_only=True)
+    username=fields.Str(required=True)#If you don't specify either:Marshmallow treats the field as: load = allowed #dump = allowed
+    password=fields.Str(required=True,load_only=True) #only user sends but the server never returns.Password should not be saved in any files or saved in any logs. Not be sent over the network 

@@ -1,6 +1,8 @@
 from flask import Flask
 from flask_smorest import Api
 
+from flask_jwt_extended import JWTManager
+import secrets
 import os
 from db import db
 import models #this automatically imports StoreModel,ItemModel
@@ -8,6 +10,9 @@ import models #this automatically imports StoreModel,ItemModel
 from resources.item import blp as ItemBlueprint  #Load all routes from item.py
 from resources.store import blp as StoreBlueprint  #Load all routes from store.py
 from resources.tag import blp as TagBlueprint     #Load all routes from tag.py
+from resources.user import blp as UserBlueprint     #Load all routes from tag.py
+
+
 
 def create_app(db_url=None):
     app = Flask(__name__)   #creates the server
@@ -29,6 +34,18 @@ def create_app(db_url=None):
     db.init_app(app)  #Connect Flask with SQLAlchemy.  SQLite = Database Engine;;SQLAlchemy = ORM (Object Relational Mapper)
 
     api = Api(app)  
+    
+    app.config["JWT_SECRET_KEY"]="80281428440095199159231244525482792435"  #these are used for signing the JWTs.This is not the same as encryption. But rather, the JWT is used with the secret keySo that when a user sends us back a JWT to tell who they are, our app can 
+                                        #Check the secret key and use it to verify that this app generated that JWT and therefore the JWT is valid. 
+                                        #The flow goes like this:1. Client sends token
+                                        #2. Server receives token
+                                        #3. Server uses JOOS
+                                        #4. Verifies signature
+                                        #5. If valid, token was created by me
+                                        #6. If invalid, someone has modified the token                                      
+                                        #7. Reject request---> its like a shops stamp--> prevent jwt tampering
+    jwt=JWTManager(app)
+
 
     @app.before_request
     def create_tables():
@@ -48,6 +65,7 @@ CREATE TABLE stores ...,CREATE TABLE items ...,CREATE TABLE tags ...,CREATE TABL
     api.register_blueprint(ItemBlueprint) #load all routes from item.py
     api.register_blueprint(StoreBlueprint)  #load all routes from store.py
     api.register_blueprint(TagBlueprint)  #load all routes from tag.py
+    api.register_blueprint(UserBlueprint)  #load all routes from user.py
 
     """After registration:  these were seperate before
 app.py

@@ -1008,3 +1008,8 @@ id  tag_id  item_id
 
 
 main feature of ORM is many-to-many relationship
+
+------------------------------------------------------------------------
+     JWT
+
+notes in notebook
