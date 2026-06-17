@@ -19,6 +19,7 @@ blp = Blueprint("Users", "users", description="Operations on users")
 
 @blp.route("/register")
 class UserRegister(MethodView):
+    @blp.doc(summary="Register a new user")
     @blp.arguments(UserSchema)
     def post(self,user_data):
         try:
@@ -35,6 +36,7 @@ class UserRegister(MethodView):
 
 @blp.route("/login")
 class UserLogin(MethodView):
+    @blp.doc(summary="Authenticate user and generate JWT tokens")
     @blp.arguments(UserSchema)
     def post(self,user_data):
         user=UserModel.query.filter(UserModel.username==user_data["username"]).first()
@@ -51,6 +53,7 @@ class UserLogin(MethodView):
 
 @blp.route("/refresh")
 class TokenRefresh(MethodView):
+    @blp.doc(summary="Generate a new access token using a refresh token")
     @jwt_required(refresh=True) #This means that it needs a refresh token, not an access token. 
     def post(self):
         current_user=get_jwt_identity()
@@ -65,6 +68,7 @@ class TokenRefresh(MethodView):
 
 @blp.route("/logout")
 class UserLogout(MethodView):
+    @blp.doc(summary="Revoke the current JWT token")
     @jwt_required()
     def post(self):
         jti = get_jwt()["jti"]  #JTI = JWT ID. #get_jwt() is a dictionary
@@ -81,12 +85,13 @@ class User(MethodView):
     sake of demonstration in this course, it can be useful
     when we are manipulating data regarding the users.
     """
-
+    @blp.doc(summary="Get user details by ID")
     @blp.response(200, UserSchema)
     def get(self, user_id):
         user = UserModel.query.get_or_404(user_id)
         return user
 
+    @blp.doc(summary="Delete a user")
     def delete(self, user_id):
         user = UserModel.query.get_or_404(user_id)
         db.session.delete(user)

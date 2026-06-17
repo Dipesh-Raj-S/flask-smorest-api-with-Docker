@@ -17,12 +17,14 @@ blp = Blueprint("Items", __name__, description="Operations on items")
 
 @blp.route("/item/<int:item_id>")
 class Item(MethodView):
+    @blp.doc(summary="Get item by ID")
     @jwt_required()
     @blp.response(200,ItemSchema)  #mainly for responses from our server
     def get(self, item_id):
         item=ItemModel.query.get_or_404(item_id)
         return item
     
+    @blp.doc(summary="Delete an item")
     @jwt_required()
     def delete(self, item_id):
         jwt=get_jwt()  # use of claim
@@ -35,7 +37,7 @@ class Item(MethodView):
         
         return {"message":"item deleted"}
 
-
+    @blp.doc(summary="Update an existing item")
     @blp.arguments(ItemUpdateSchema)
     @blp.response(200,ItemSchema)
     def put(self, item_data,item_id): # we handle an Idempotent request->Running one or ten requests should result in the same state of it by the end. 
@@ -56,11 +58,13 @@ class Item(MethodView):
 
 @blp.route("/item")
 class ItemList(MethodView):
+    @blp.doc(summary="Get all items")
     @jwt_required()
     @blp.response(200,ItemSchema(many=True))
     def get(self):
         return ItemModel.query.all()
 
+    @blp.doc(summary="Create a new item")
     @jwt_required(fresh=True)#Needs a fresh token->Same for changing password or deleting account 
                         # Now you cannot access this endpoint unless you send a ZWT.
                         #✓ Is there a JWT token?

@@ -16,10 +16,13 @@ blp= Blueprint("stores",__name__,description="Operations on stores")
 
 @blp.route("/store/<int:store_id>")
 class Store(MethodView):
+    @blp.doc(summary="Get a store by ID")
     @blp.response(200,StoreSchema)
     def get(self,store_id):
         store=StoreModel.query.get_or_404(store_id)
         return store  #Python object is being returned here
+    
+    @blp.doc(summary="Delete a store")
     def delete(self,store_id):
         store=StoreModel.query.get_or_404(store_id)
         db.session.delete(store)
@@ -29,10 +32,12 @@ class Store(MethodView):
 
 @blp.route("/store")
 class StoreList(MethodView):
+    @blp.doc(summary="Get all stores")
     @blp.response(201,StoreSchema(many=True))
     def get(self):
         return StoreModel.query.all()
     
+    @blp.doc(summary="Create a new store")
     @blp.arguments(StoreSchema)
     @blp.response(200,StoreSchema())
     def post(self,store_data):
