@@ -12,7 +12,10 @@ from resources.store import blp as StoreBlueprint  #Load all routes from store.p
 from resources.tag import blp as TagBlueprint     #Load all routes from tag.py
 from resources.user import blp as UserBlueprint     #Load all routes from tag.py
 
-
+#Adding log out feature . When the user wants to terminate their access token so that the access token can no longer be used .
+#So you are going to grab the taxes token and store it somewhere, let's say, for terminated list. 
+#And for every token which we are getting through the request, we check whether that token is not in the terminated list and only then provide access. 
+from blocklist import BLOCKLIST
 
 def create_app(db_url=None):
     app = Flask(__name__)   #creates the server
@@ -45,6 +48,19 @@ def create_app(db_url=None):
                                         #6. If invalid, someone has modified the token                                      
                                         #7. Reject request---> its like a shops stamp--> prevent jwt tampering
     jwt=JWTManager(app)
+
+    @jwt.token_in_blocklist_loader
+    def check_if_token_in__blocklist(jwt_header,jwt_payload):
+        return jwt_payload["jti"] in BLOCKLIST
+
+    @jwt.revoked_token_loader
+    def revoked_token__callback(jwt_header,jwt_payload):
+        return (
+            jsonify(
+                {"description":"The token has been revoked.","error":"token_revoked"}
+            ),401
+        )
+
 
     #adding claims feature-Basically, it allows you to add more information to your JWT when it is created. 
     #So here we are adding whether the user is an admin or not.Only the admin gets permission to delete, which we have written in resources item.py.  

@@ -12,6 +12,8 @@ from db import db
 from models import UserModel
 from schemas import UserSchema
 
+from flask_jwt_extended import jwt_required,get_jwt
+from blocklist import BLOCKLIST
 
 blp = Blueprint("Users", "users", description="Operations on users")
 
@@ -45,6 +47,17 @@ class UserLogin(MethodView):
                                                  #Anyone having this JWT access token can pretend to be this user and do all the activities. 
                                                  #We can also find which users this is and then can give only allowed permissions for that user. 
         abort(401,message="invalid credentials.")
+
+
+@blp.route("/logout")
+class UserLogout(MethodView):
+    @jwt_required()
+    def post(self):
+        jti = get_jwt()["jti"]  #JTI = JWT ID. #get_jwt() is a dictionary
+        BLOCKLIST.add(jti)
+        return {"message": "Successfully logged out"}, 200
+
+
 
 @blp.route("/user/<int:user_id>")
 class User(MethodView):
