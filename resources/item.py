@@ -4,6 +4,9 @@ from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from schemas import ItemSchema,ItemUpdateSchema
 
+#Predicting our endpoints, If a user doesn't have the correct JWT token  
+from flask_jwt_extended import jwt_required
+
 from sqlalchemy.exc import SQLAlchemyError
 
 from  db import db
@@ -14,11 +17,13 @@ blp = Blueprint("Items", __name__, description="Operations on items")
 
 @blp.route("/item/<int:item_id>")
 class Item(MethodView):
+    @jwt_required()
     @blp.response(200,ItemSchema)  #mainly for responses from our server
     def get(self, item_id):
         item=ItemModel.query.get_or_404(item_id)
         return item
-
+    
+    @jwt_required()
     def delete(self, item_id):
         item=ItemModel.query.get_or_404(item_id)
         db.session.delete(item)
@@ -47,10 +52,18 @@ class Item(MethodView):
 
 @blp.route("/item")
 class ItemList(MethodView):
+    @jwt_required()
     @blp.response(200,ItemSchema(many=True))
     def get(self):
         return ItemModel.query.all()
 
+    @jwt_required()  #Now you cannot access this endpoint unless you send a ZWT.
+                        #✓ Is there a JWT token?
+                        #✓ Is the token validly signed?
+                        #✓ Has the token expired?
+                        #✓ Is it the correct token type?
+                        #✓ Can extract identity"""
+                        #They can be invalid if the client tries to change the content but They don't have the correct secret key. 
     @blp.arguments(ItemSchema)
     @blp.response(201, ItemSchema)
     def post(self,item_data):  #item_data is the validated data which the schema requested
