@@ -5,3 +5,4 @@ sqlalchemy
 flask-sqlalchemy
 flask-jwt-extended
 passlib #used for hasing passwords
+flask-migrate

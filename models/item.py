@@ -8,6 +8,7 @@ class ItemModel(db.Model):
     #Defining all the IDs to be in the column 
     id=db.Column(db.Integer,primary_key=True)  #In Postgres, all this ID will be auto filled, like incremented one by one. 
     name=db.Column(db.String(80),unique=True,nullable=False)
+    description=db.Column(db.String)
     price=db.Column(db.Float(precision=2),unique=False,nullable=False)
     store_id=db.Column(db.Integer,db.ForeignKey("stores.id"),unique=False,nullable=False) #This value we will be linking it with the other table, also store table. This ID should match the ones in the store table. 
                                                                 # for doing this, we use ONE TO MANY RELATIONSHIPS

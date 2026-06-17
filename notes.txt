@@ -1013,3 +1013,184 @@ main feature of ORM is many-to-many relationship
      JWT
 
 notes in notebook
+------------------------------------------------------------------------
+
+why do we need flask migrate?
+
+@app.before_request
+def create_tables():
+    db.create_all()
+
+    Suppose your table is:
+
+class UserModel(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80))
+
+SQLAlchemy creates:
+
+CREATE TABLE users (
+    id INTEGER,
+    username VARCHAR(80)
+)
+
+Later
+
+You modify the model:
+
+class UserModel(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80))
+    email = db.Column(db.String(120))
+
+and restart.
+
+You might think:
+
+db.create_all()
+will add email column
+
+❌ Wrong.
+
+create_all() only creates tables that don't exist.
+
+It does NOT modify existing tables.
+
+What developers did before migrations
+
+Delete database:
+
+rm data.db
+
+Restart:
+
+db.create_all()
+
+New table created.
+
+Problem:
+
+ALL DATA LOST
+
+
+Flask Migrate is the connection between Flask and Alembic. 
+It will look at your SQLAlchemy models as well. 
+
+
+now wee can remove the db.create_all() block
+flask db init --> A folder called migrations will be created. 
+
+
+(.venv) PS C:\Users\dipes\OneDrive\Desktop\AppSec\webdev\REST API\REST API PROJECT> flask db init    
+Creating directory C:\Users\dipes\OneDrive\Desktop\AppSec\webdev\REST API\REST API PROJECT\migrations ...  done
+Creating directory C:\Users\dipes\OneDrive\Desktop\AppSec\webdev\REST API\REST API PROJECT\migrations\versions ...  done
+Generating C:\Users\dipes\OneDrive\Desktop\AppSec\webdev\REST API\REST API PROJECT\migrations\alembic.ini ...  done
+Generating C:\Users\dipes\OneDrive\Desktop\AppSec\webdev\REST API\REST API PROJECT\migrations\env.py ...  done
+Generating C:\Users\dipes\OneDrive\Desktop\AppSec\webdev\REST API\REST API PROJECT\migrations\README ...  done
+Generating C:\Users\dipes\OneDrive\Desktop\AppSec\webdev\REST API\REST API PROJECT\migrations\script.py.mako ...  done
+Please edit configuration/connection/logging settings in C:\Users\dipes\OneDrive\Desktop\AppSec\webdev\REST API\REST API PROJECT\migrations\alembic.ini before proceeding.
+(.venv) PS C:\Users\dipes\OneDrive\Desktop\AppSec\webdev\REST API\REST API PROJECT> flask db migrate
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.plugins] setting up autogenerate plugin alembic.autogenerate.schemas
+INFO  [alembic.runtime.plugins] setting up autogenerate plugin alembic.autogenerate.tables
+INFO  [alembic.runtime.plugins] setting up autogenerate plugin alembic.autogenerate.types
+INFO  [alembic.runtime.plugins] setting up autogenerate plugin alembic.autogenerate.constraints
+INFO  [alembic.runtime.plugins] setting up autogenerate plugin alembic.autogenerate.defaults
+INFO  [alembic.runtime.plugins] setting up autogenerate plugin alembic.autogenerate.comments
+INFO  [alembic.autogenerate.compare.tables] Detected added table 'stores'
+INFO  [alembic.autogenerate.compare.tables] Detected added table 'users'
+INFO  [alembic.autogenerate.compare.tables] Detected added table 'items'
+INFO  [alembic.autogenerate.compare.tables] Detected added table 'tags'
+INFO  [alembic.autogenerate.compare.tables] Detected added table 'items_tags'
+Generating C:\Users\dipes\OneDrive\Desktop\AppSec\webdev\REST API\REST API PROJECT\migrations\versions\e00f83b24b41_.py ...  done
+(.venv) PS C:\Users\dipes\OneDrive\Desktop\AppSec\webdev\REST API\REST API PROJECT> flask db upgrade
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> e00f83b24b41, empty message
+(.venv) PS C:\Users\dipes\OneDrive\Desktop\AppSec\webdev\REST API\REST API PROJECT> flask db migrate
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.plugins] setting up autogenerate plugin alembic.autogenerate.schemas
+INFO  [alembic.runtime.plugins] setting up autogenerate plugin alembic.autogenerate.tables
+INFO  [alembic.runtime.plugins] setting up autogenerate plugin alembic.autogenerate.types
+INFO  [alembic.runtime.plugins] setting up autogenerate plugin alembic.autogenerate.constraints
+INFO  [alembic.runtime.plugins] setting up autogenerate plugin alembic.autogenerate.defaults
+INFO  [alembic.runtime.plugins] setting up autogenerate plugin alembic.autogenerate.comments
+INFO  [alembic.autogenerate.compare.tables] Detected added column 'items.description'
+Generating C:\Users\dipes\OneDrive\Desktop\AppSec\webdev\REST API\REST API PROJECT\migrations\versions\68e0ae556e50_.py ...  done
+(.venv) PS C:\Users\dipes\OneDrive\Desktop\AppSec\webdev\REST API\REST API PROJECT> flask db upgrade
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade e00f83b24b41 -> 68e0ae556e50, empty mess
+
+
+we upgrade the db before deploying
+u can checkthe migration file which shows whta u have changedand then u upgrade the db
+
+When you add a column that uses a default value, any rows that existed previously will have null as the value. 
+You will have to go into the database to add the default value to those rows. 
+You can also do this during the migration, since an Alembic migration can execute any arbitrary SQL queries. 
+
+
+
+Here's an example for a column being added with a default value:
+
+migrations/versions/sample_migration.py
+from alembic import op
+import sqlalchemy as sa
+
+
+# revision identifiers, used by Alembic.
+revision = "9c386e4052be"
+down_revision = "713af8a4cb34"
+branch_labels = None
+depends_on = None
+
+
+def upgrade():
+    # ### commands auto generated by Alembic - please adjust! ###
+    op.add_column(
+        "invoices",
+        sa.Column("enable_downloads", sa.Boolean(), nullable=True, default=False),
+    )
+    # ### end Alembic commands ###
+
+
+def downgrade():
+    # ### commands auto generated by Alembic - please adjust! ###
+    op.drop_column("invoices", "enable_downloads")
+    # ### end Alembic commands ###
+
+You can see that we're adding a column called enable_downloads to the invoices table. The default value for new rows will be False, but what is the value for all the invoices we already have in the database?
+
+The value will be undefined, or null.
+
+What we must do is tell Alembic to insert False into each of the existing rows. We can do that with SQL:
+
+migrations/versions/sample_migration.py
+from alembic import op
+import sqlalchemy as sa
+
+
+# revision identifiers, used by Alembic.
+revision = "9c386e4052be"
+down_revision = "713af8a4cb34"
+branch_labels = None
+depends_on = None
+
+
+def upgrade():
+    # ### commands auto generated by Alembic - please adjust! ###
+    op.add_column(
+        "invoices",
+        sa.Column("enable_downloads", sa.Boolean(), nullable=True, default=False),
+    )
+    op.execute("UPDATE invoices SET enable_downloads = False")
+    # ### end Alembic commands ###
+
+
+def downgrade():
+    # ### commands auto generated by Alembic - please adjust! ###
+    op.drop_column("invoices", "enable_downloads")
+    # ### end Alembic commands ###

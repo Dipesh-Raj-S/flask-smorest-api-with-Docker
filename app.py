@@ -12,6 +12,8 @@ from resources.store import blp as StoreBlueprint  #Load all routes from store.p
 from resources.tag import blp as TagBlueprint     #Load all routes from tag.py
 from resources.user import blp as UserBlueprint     #Load all routes from tag.py
 
+from flask_migrate import Migrate
+
 #Adding log out feature . When the user wants to terminate their access token so that the access token can no longer be used .
 #So you are going to grab the taxes token and store it somewhere, let's say, for terminated list. 
 #And for every token which we are getting through the request, we check whether that token is not in the terminated list and only then provide access. 
@@ -35,6 +37,8 @@ def create_app(db_url=None):
                                             
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"]=False
     db.init_app(app)  #Connect Flask with SQLAlchemy.  SQLite = Database Engine;;SQLAlchemy = ORM (Object Relational Mapper)
+
+    migrate=Migrate(app,db)#Since we will be using flask-migrate to create our database tables, we no longer need SQLAlchemy to do it, so we can remove the lines that execute db.create_all() .
 
     api = Api(app)  
     
@@ -111,11 +115,14 @@ def create_app(db_url=None):
             401,
         )
 
-
+    """
+    WE DONT NEED THIS NOW AS WE SWITCHED TO FLASK-MIGRATE
     @app.before_request
     def create_tables():
         db.create_all()
     
+    """
+
     """
     Before EVERY HTTP request, run create_tables()--> 
     db.create_all() do?
