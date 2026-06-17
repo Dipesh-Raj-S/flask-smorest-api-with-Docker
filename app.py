@@ -12,6 +12,7 @@ from resources.store import blp as StoreBlueprint  #Load all routes from store.p
 from resources.tag import blp as TagBlueprint     #Load all routes from tag.py
 from resources.user import blp as UserBlueprint     #Load all routes from tag.py
 
+from flask import redirect
 from flask_migrate import Migrate
 
 #Adding log out feature . When the user wants to terminate their access token so that the access token can no longer be used .
@@ -146,7 +147,10 @@ app.py
    ├── store routes
    └── tag routes"""
 
-    
+    @app.route("/")
+    def home():
+        return redirect("/swagger-ui", code=302)
+
     return app
 
 #http://localhost:5000/swagger-ui
