@@ -46,6 +46,15 @@ def create_app(db_url=None):
                                         #7. Reject request---> its like a shops stamp--> prevent jwt tampering
     jwt=JWTManager(app)
 
+    #adding claims feature-Basically, it allows you to add more information to your JWT when it is created. 
+    #So here we are adding whether the user is an admin or not.Only the admin gets permission to delete, which we have written in resources item.py.  
+    @jwt.additional_claims_loader
+    def add_claims_to_jwt(identity):
+        #Identity equal to one is not the best way. Usually look in the database and see whether the user is an admin, and then give JWT the admin right. 
+        #If someone has become an admin again, that will reflect only after he or she logs in again, because the old JWT token is not changed, so the admin right is also not changed if you use the same one. 
+        if int(identity)==1:
+            return {"is_admin":True}
+        return {"is_admin":False}
 
     @jwt.expired_token_loader
     def expired_token_callback(jwt_header, jwt_payload):
