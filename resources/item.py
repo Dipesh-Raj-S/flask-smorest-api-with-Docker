@@ -61,7 +61,8 @@ class ItemList(MethodView):
     def get(self):
         return ItemModel.query.all()
 
-    @jwt_required()  #Now you cannot access this endpoint unless you send a ZWT.
+    @jwt_required(fresh=True)#Needs a fresh token->Same for changing password or deleting account 
+                        # Now you cannot access this endpoint unless you send a ZWT.
                         #✓ Is there a JWT token?
                         #✓ Is the token validly signed?
                         #✓ Has the token expired?

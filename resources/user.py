@@ -12,7 +12,7 @@ from db import db
 from models import UserModel
 from schemas import UserSchema
 
-from flask_jwt_extended import jwt_required,get_jwt
+from flask_jwt_extended import jwt_required,get_jwt,create_refresh_token,get_jwt_identity
 from blocklist import BLOCKLIST
 
 blp = Blueprint("Users", "users", description="Operations on users")
@@ -40,13 +40,27 @@ class UserLogin(MethodView):
         user=UserModel.query.filter(UserModel.username==user_data["username"]).first()
 
         if user and pbkdf2_sha256.verify(user_data["password"],user.password):#we hash the user_data password and check whether the hashed password stored in database is same and verify it,, we dont unhash and check
-            access_token=create_access_token(identity=str(user.id))
-            return {"access_token":access_token} #the token is encoded, so it canbe decoded,
+            access_token=create_access_token(identity=str(user.id),fresh=True)
+            refresh_token=create_refresh_token(identity=str(user.id))
+            return {"access_token":access_token,"refresh_token":refresh_token} #the token is encoded, so it canbe decoded,
                                                  #only if it is hashed u cant unhash
                                                  #the user id is stored --> "sub"
                                                  #Anyone having this JWT access token can pretend to be this user and do all the activities. 
                                                  #We can also find which users this is and then can give only allowed permissions for that user. 
         abort(401,message="invalid credentials.")
+
+@blp.route("/refresh")
+class TokenRefresh(MethodView):
+    @jwt_required(refresh=True) #This means that it needs a refresh token, not an access token. 
+    def post(self):
+        current_user=get_jwt_identity()
+        new_token=create_access_token(identity=current_user,fresh=False)#We are getting a refresh token.This is not a fresh token.  
+        jti=get_jwt()["jti"]
+        BLOCKLIST.add(jti)
+        return {"access_token":new_token} #You will be able to create one non-fresh token.And then the refreshed token won't be usable again because it is in the blocklist. 
+                                            
+
+
 
 
 @blp.route("/logout")

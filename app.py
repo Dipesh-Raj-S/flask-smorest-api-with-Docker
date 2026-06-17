@@ -61,6 +61,17 @@ def create_app(db_url=None):
             ),401
         )
 
+    @jwt.needs_fresh_token_loader
+    def token_not_fresh_callback(jwt_header, jwt_payload):
+        return (
+            jsonify(
+                {
+                    "description": "The token is not fresh.",
+                    "error": "fresh_token_required",
+                }
+            ),
+            401,
+        )
 
     #adding claims feature-Basically, it allows you to add more information to your JWT when it is created. 
     #So here we are adding whether the user is an admin or not.Only the admin gets permission to delete, which we have written in resources item.py.  
